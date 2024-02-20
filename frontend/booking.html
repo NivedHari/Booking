@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+  font-family: "Arial", sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+#container {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#main-header {
+  background-color: #3498db;
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+}
+
+#box {
+  width: 80%;
+  width: 40rem;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#box-heading {
+  text-align: center;
+  margin: 0 auto;
+  display: block;
+  margin-top: 20px;
+}
+.center-heading {
+  text-align: center; /* Center the text content horizontally */
+}
+
+.details {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+#submit {
+  background-color: #3498db;
+  color: #fff;
+  font-weight: bold;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin: 0 auto;
+  display: block;
+  margin-top: 20px;
+}
+
+input[type="button"]:hover {
+  background-color: #258cd1;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+#userDisplay {
+  width: 80%;
+  width: 40rem;
+  margin: 0 auto;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+#userList {
+  list-style: none;
+  padding: 0;
+}
+
+#userList li {
+  background-color: #f4f4f4;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-button {
+  background-color: #e74c3c;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 10px;
+  float: right;
+}
+
+.edit-button {
+  background-color: skyblue;
+  color: #fff;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 10px;
+  float: right;
+}
+
+    </style>
+    <title>Booking App</title>
+</head>
+<body>
+    <div id="container">
+    <header id="main-header" ><h2>Booking App</h2></header>
+    </div>
+    <div id="box">
+    <h3 id="box heading" class="center-heading">Add Details </h3>
+
+    <form id="userData" class ="details">
+    <label for="Name" id="name">Name : </label>
+    <input type="text" class="details" id="userName" ><br>
+    <label for="email" id="email" >Email ID : </label>
+    <input type="email" class="details" id="userEmail" ><br>
+    <input type="hidden" id="userId">
+    <input type="submit" value="BOOK" id="submit">
+    </form>
+    </div>
+    </div>
+    <div id="userDisplay">
+        <h3>User Details:</h3>
+        <ul id="userList"></ul>
+    </div>
+
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"
+        integrity="sha512-NQfB/bDaB8kaSXF8E77JjhHG5PM6XVRxvHzkZiwl3ddWCEPBa23T76MuWSwAJdMGJnmQqM0VeY9kFszsrBEFrQ=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+      ></script>
+
+    <script>
+        var form = document.getElementById("userData");
+        var userList = document.getElementById("userList");
+
+        form.addEventListener("submit", addDetails);
+
+        window.addEventListener("DOMContentLoaded", () => {
+  axios
+    .get(
+      "http://localhost:8000/api/users"
+    )
+    .then((res) => {
+      showUserdetails(res.data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
+function showUserdetails(userData) {
+  if (userData && userData.users) {
+    userData.users.forEach((user) => {
+      displayUser(user);
+    });
+  }
+}
+
+function displayUser(user) {
+  const li = createUserElement(user);
+  userList.appendChild(li);
+}
+
+function createUserElement(user) {
+  const li = document.createElement("li");
+  li.className = "user-data";
+  li.textContent = `Name: ${user.name}  Email-Id: ${user.email}`;
+
+  const deleteButton = document.createElement("button");
+  deleteButton.textContent = "Delete";
+  deleteButton.className = "delete-button";
+
+  deleteButton.addEventListener("click", function () {
+    deleteUser(user.email);
+    userList.removeChild(li);
+  });
+
+  const editButton = document.createElement("button");
+  editButton.textContent = "Edit";
+  editButton.className = "edit-button";
+
+  editButton.addEventListener("click", function () {
+    editUser(user.name, user.email, user._id);
+    //userList.removeChild(li);
+  });
+
+  li.appendChild(deleteButton);
+  li.appendChild(editButton);
+
+  return li;
+}
+
+function addDetails(e) {
+  e.preventDefault();
+  console.log("Form submitted");
+
+  var userName = document.getElementById("userName").value;
+  var email = document.getElementById("userEmail").value;
+  var userId = document.getElementById("userId").value;
+  if (userId) {
+    var updatedUser = {
+      name: userName,
+      email: email,
+    };
+
+    axios
+      .put(
+        `http://localhost:8000/api/users/${email}`,
+        updatedUser
+      )
+      .then((response) => {
+        console.log("User details updated:", response.data);
+        refreshUserList();
+      })
+      .catch((error) => {
+        console.error("Error updating user details:", error);
+      });
+  }else{
+    const newUser = {
+      name: userName,
+      email: email,
+    };
+
+    axios.post('http://localhost:8000/api/users', newUser)
+      .then((response) => {
+        console.log("User details saved:", response.data);
+        displayUser(newUser);
+      })
+      .catch((error) => {
+        console.error("Error saving user details:", error);
+      });
+    }
+  
+}
+
+function editUser(name, email, userId) {
+  document.getElementById("userName").value = name;
+  document.getElementById("userEmail").value = email;
+  document.getElementById("userId").value = userId;
+
+}
+
+function deleteUser(email) {
+  const apiUrl = `http://localhost:8000/api/users/${email}`;
+  console.log(apiUrl)
+
+  axios
+    .delete(apiUrl)
+    .then((response) => {
+      console.log("User deleted successfully:", response.data);
+    })
+    .catch((error) => {
+      console.error("Error deleting user:", error);
+    });
+}
+
+function refreshUserList() {
+  axios
+    .get(
+      "http://localhost:8000/api/users"
+    )
+    .then((res) => {
+      userList.innerHTML = "";
+
+      showUserdetails(res.data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+    </script>
+    
+    <script src="booking.js"></script>
+
+
+    
+</body>
+</html>
